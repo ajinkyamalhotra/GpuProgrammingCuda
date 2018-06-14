@@ -9,14 +9,14 @@
 #define BLOCK_WIDTH (O_TILE_WIDTH + MASK_WIDTH-1)
 #define clamp(x) (min(max((x), 0.0), 1.0))
 
-//@@ INSERT CODE HERE 
-//implement the tiled 2D convolution kernel with adjustments for channels
+//@@tiled 2D convolution kernel
 __global__ void convolutional2D(float* in, const float* __restrict__ mask, float* out, int maskWidth, int width, int height, int channels) {
 	
 	//@@ declaring shared variable for the input
 	__shared__ float in_S[BLOCK_WIDTH][BLOCK_WIDTH];
 
 	int tx = threadIdx.x; int ty = threadIdx.y;
+	
 	//@@Since if BlockDim is used we will get ghost elements as input
 	int row_o = blockIdx.y * O_TILE_WIDTH + ty;
 	int col_o = blockIdx.x * O_TILE_WIDTH + tx;
@@ -33,7 +33,8 @@ __global__ void convolutional2D(float* in, const float* __restrict__ mask, float
 			in_S[ty][tx] = in[(row_i *width + col_i) * channels + k];
 		else in_S[ty][tx] = 0.0f;
 
-		//@@making sure all the threads in a block have arrived with the input data.
+		//@@making sure all the threads in a block are done with data loading phase
+		//@@before proceeding to the calculation step
 		__syncthreads();
 
 		float pixVal = 0.0f;
@@ -98,8 +99,8 @@ int main(int argc, char *argv[]) {
   wbTime_start(GPU, "Doing GPU Computation (memory + compute)");
 
   wbTime_start(GPU, "Doing GPU memory allocation");
-  //@@ INSERT CODE HERE
-  //allocate device memory
+	
+  //allocating device memory
   int imageSize = (imageWidth * imageHeight * imageChannels) * sizeof(float);
   int maskSize = (maskRows * maskColumns) * sizeof(float);
   cudaMalloc((void **) &deviceInputImageData, imageSize);
@@ -109,22 +110,21 @@ int main(int argc, char *argv[]) {
   wbTime_stop(GPU, "Doing GPU memory allocation");
 
   wbTime_start(Copy, "Copying data to the GPU");
-  //@@ INSERT CODE HERE
-  //copy host memory to device
+
+  //copying host memory to device
   cudaMemcpy(deviceInputImageData, hostInputImageData, imageSize, cudaMemcpyHostToDevice);
   cudaMemcpy(deviceMaskData, hostMaskData, maskSize, cudaMemcpyHostToDevice);
   
   wbTime_stop(Copy, "Copying data to the GPU");
 
   wbTime_start(Compute, "Doing the computation on the GPU");
-  //@@ INSERT CODE HERE
-  
+    
   //Grid height and width
   int gridWidth  = (imageWidth-1)/O_TILE_WIDTH +1;
   int gridHeight = (imageHeight-1)/O_TILE_WIDTH +1;
   dim3 DimGrid(gridWidth, gridHeight, 1);
   
-  //Using Design2: 
+  //Using Design2: where block size equals to the input size and not the output size
   dim3 DimBlock(BLOCK_WIDTH, BLOCK_WIDTH, 1);
  
   //invoking the kernel
@@ -133,8 +133,8 @@ int main(int argc, char *argv[]) {
   wbTime_stop(Compute, "Doing the computation on the GPU");
 
   wbTime_start(Copy, "Copying data from the GPU");
-  //@@ INSERT CODE HERE
-  //copy results from device to host	
+  
+  //copying results from device to host	
   cudaMemcpy(hostOutputImageData, deviceOutputImageData, imageSize, cudaMemcpyDeviceToHost);
 
   wbTime_stop(Copy, "Copying data from the GPU");
@@ -143,8 +143,7 @@ int main(int argc, char *argv[]) {
 
   wbSolution(arg, outputImage);
 
-  //@@ INSERT CODE HERE
-  //deallocate device memory	
+  //Freeing device memory	
   cudaFree(deviceInputImageData);
   cudaFree(deviceMaskData);
   cudaFree(deviceOutputImageData);

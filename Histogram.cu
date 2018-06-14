@@ -25,8 +25,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
 }
 
 __global__ void histogram(unsigned int *input, unsigned int *bins, unsigned int num_elements, unsigned int num_bins) {
-	
-	//@@ Write the kernel that computes the histogram
+
 	//@@ Make sure to use the privitization technique
 	__shared__ unsigned int hist[NUM_BINS];
 	
@@ -34,13 +33,17 @@ __global__ void histogram(unsigned int *input, unsigned int *bins, unsigned int 
 	
 	int i = blockDim.x * blockIdx.x + threadIdx.x;
 	
-	for (int j = 0; j < numOfElementsPerThread; ++j)  hist[threadIdx.x + blockDim.x*j] = 0;
+	for (int j = 0; j < numOfElementsPerThread; ++j)  
+		hist[threadIdx.x + blockDim.x*j] = 0;
+	
 	__syncthreads();
 	
-	if (i < num_elements) atomicAdd(&hist[input[i]], 1);
+	if (i < num_elements)
+		atomicAdd(&hist[input[i]], 1);
 	__syncthreads();
 	
-	for (int k = 0; k < numOfElementsPerThread; ++k)  atomicAdd(&bins[threadIdx.x + blockDim.x*k], hist[threadIdx.x+blockDim.x*k]);
+	for (int k = 0; k < numOfElementsPerThread; ++k) 
+		atomicAdd(&bins[threadIdx.x + blockDim.x*k], hist[threadIdx.x+blockDim.x*k]);
 }
 
 __global__ void saturate(unsigned int *bins, unsigned int num_bins) {

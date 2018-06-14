@@ -23,10 +23,10 @@
 //@@Matrix multiplication kernel
 __global__ void matrixMultiply(float *A, float *B, float *C, int numARows, int numAColumns, int numBRows, int numBColumns, int numCRows, int numCColumns) {
 	
-	//@@Y-axis Thread Dimension
+	//@@Y-axis matrix dimension
 	int row = blockIdx.y*blockDim.y + threadIdx.y;
 
-	//@@X-axis Thread Dimension
+	//@@X-axis matrix Dimension
 	int columns = blockIdx.x*blockDim.x + threadIdx.x;
 
 	//@@Initilaizing final value to add in the output matrix

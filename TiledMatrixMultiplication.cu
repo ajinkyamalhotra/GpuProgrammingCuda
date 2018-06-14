@@ -58,7 +58,7 @@ __global__ void matrixMultiplyShared(float *A, float *B, float *C, int numARows,
 			ds_B[ty][tx] = B[(p*TILE_WIDTH + ty)*numBColumns + col];
 		else ds_B[ty][tx] = 0.0;
 		
-		//@@making sure that all threads in a block are done with the loading data into shared memory
+		//@@making sure that all threads in a block are done with loading data from global memory to shared memory
 		//@@before proceeding to the calculations phase
 		__syncthreads();
 		
@@ -66,7 +66,7 @@ __global__ void matrixMultiplyShared(float *A, float *B, float *C, int numARows,
 		if (row < numARows  && col < numBColumns) 
 			for (int i = 0; i < TILE_WIDTH; i++) pValue += ds_A[ty][i] * ds_B[i][tx];
 
-		//@@making sure that all threads in a block are done with the loading data into shared memory
+		//@@making sure that all threads in a block are done with loading data from global memory to shared memory
 		//@@before proceeding to the calculations phase
 		__syncthreads();
 	}

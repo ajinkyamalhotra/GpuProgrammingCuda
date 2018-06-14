@@ -27,23 +27,33 @@ __global__ void matrixMultiplyShared(float *A, float *B, float *C, int numARows,
 	//@@declaring the shared memory
 	__shared__ float ds_A[TILE_WIDTH][TILE_WIDTH];
 	__shared__ float ds_B[TILE_WIDTH][TILE_WIDTH];
-
+	
+	//@@X-axis and Y-axis block dimensions
 	int bx = blockIdx.x; int by = blockIdx.y;
+	
+	//@@X-axis and Y-axis thread dimensions
 	int tx = threadIdx.x; int ty = threadIdx.y;
-
+	
+	//@@Y-axis matrix dimension
 	int row = by * blockDim.y + ty;
+	
+	//@@X-axis matrix dimension
 	int col = bx * blockDim.x + tx;
+	
+	//@@Initilaizing final value to add in the output matrix
 	float pValue = 0;
 	
 	//@@initializing shared memory
 	for (int p = 0; p < numAColumns / TILE_WIDTH + 1 ; p++) {
 		
-		//@@checking boundary conditions to poplulate matrix ds_A in shared memory
+		//@@checking boundary conditions
+		//@@loading the input data from global memory matrix A to shared memory matrix ds_A.
 		if (row < numARows && p*TILE_WIDTH + tx < numAColumns) 
 			ds_A[ty][tx] = A[row*numAColumns + p*TILE_WIDTH + tx];
 		else ds_A[ty][tx] = 0.0;
 		
-		//@@checking boundary conditions to poplulate matrix ds_B in shared memory
+		//@@checking boundary conditions
+		//@@loading the input data from global memory matrix B to shared memory matrix ds_B.
 		if (p*TILE_WIDTH + ty < numBRows && col < numBColumns) 
 			ds_B[ty][tx] = B[(p*TILE_WIDTH + ty)*numBColumns + col];
 		else ds_B[ty][tx] = 0.0;

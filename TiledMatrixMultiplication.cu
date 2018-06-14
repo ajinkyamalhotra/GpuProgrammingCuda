@@ -28,7 +28,7 @@ __global__ void matrixMultiplyShared(float *A, float *B, float *C, int numARows,
 	__shared__ float ds_A[TILE_WIDTH][TILE_WIDTH];
 	__shared__ float ds_B[TILE_WIDTH][TILE_WIDTH];
 	
-	//@@X-axis and Y-axis block dimensions
+	//@@X-axis and Y-axis block id
 	int bx = blockIdx.x; int by = blockIdx.y;
 	
 	//@@X-axis and Y-axis thread dimensions

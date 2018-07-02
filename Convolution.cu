@@ -17,7 +17,7 @@ __global__ void convolutional2D(float* in, const float* __restrict__ mask, float
 
 	int tx = threadIdx.x; int ty = threadIdx.y;
 	
-	//@@Since if BlockDim is used we will get ghost elements as input
+	//@@If BlockDim is used we will get ghost elements as input
 	int row_o = blockIdx.y * O_TILE_WIDTH + ty;
 	int col_o = blockIdx.x * O_TILE_WIDTH + tx;
 
@@ -25,13 +25,15 @@ __global__ void convolutional2D(float* in, const float* __restrict__ mask, float
 	int row_i = row_o - (MASK_WIDTH / 2);
 	int col_i = col_o - (MASK_WIDTH / 2);
 
-	//@@Since we have 3 channels, one thread will process 3 values//
+	//@@We have 3 channels, one thread will process 3 values//
 	for (int k = 0; k < channels; ++k) {
 
 		//@@loading the input data from global memory to shared memory.
 		if (row_i > -1 && row_i < height && col_i > -1 && col_i < width)
 			in_S[ty][tx] = in[(row_i *width + col_i) * channels + k];
-		else in_S[ty][tx] = 0.0f;
+		
+		else
+			in_S[ty][tx] = 0.0f;
 
 		//@@making sure all the threads in a block are done with data loading phase
 		//@@before proceeding to the calculation step

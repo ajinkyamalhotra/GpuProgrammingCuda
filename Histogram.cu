@@ -26,7 +26,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
 
 __global__ void histogram(unsigned int *input, unsigned int *bins, unsigned int num_elements, unsigned int num_bins) {
 
-	//@@ Make sure to use the privitization technique
+	//@@ Using privitization technique
 	__shared__ unsigned int hist[NUM_BINS];
 	
 	int numOfElementsPerThread = NUM_BINS / BLOCK_SIZE;
@@ -48,7 +48,7 @@ __global__ void histogram(unsigned int *input, unsigned int *bins, unsigned int 
 
 __global__ void saturate(unsigned int *bins, unsigned int num_bins) {
 	
-	//@@ Write the kernel that applies saturtion to counters (i.e., if the bin value is more than 127, make it equal to 127)
+	//@@If the bin value is more than 127, make it equal to 127
 	for (int i = 0; i < NUM_BINS / BLOCK_SIZE; ++i)
 		
 		if (bins[threadIdx.x + blockDim.x*i] >= 128)

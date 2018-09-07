@@ -8,7 +8,7 @@
 #include <device_functions.h>
 #include <cuda_runtime_api.h>
 
-//vector Addition kernel
+//@@ Vector Addition kernel
 __global__ void vecAdd(float *in1, float *in2, float *out, int len) {
 	
 	int i = threadIdx.x + (blockDim.x * blockIdx.x);
@@ -18,6 +18,7 @@ __global__ void vecAdd(float *in1, float *in2, float *out, int len) {
 		out[i] = in1[i] + in2[i];
 }
 
+//@@ Host Code
 int main(int argc, char **argv) {
   wbArg_t args;
   int inputLength;
